@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1D6FE8">
+  <meta name="description" content="SolveForJas - A fun math survival game for kids!" />
+  <title>Just Solve! - Math Game</title>
+
+  <!--fav-icon-->
+  <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg">
+  <link rel="apple-touch-icon" href="./favicon/apple-touch-icon.png">
+
+  <link rel="manifest" href="./manifest.json">
+
+
+  <!-- Tailwind CSS via CDN, cached by service worker for offline use -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Baloo 2 for headings, Nunito for body text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script>
+    /*
+     * Tailwind theme — "Ocean Blue" palette
+     * Primary blues are calming and proven effective for learning environments.
+     * Accent colors keep things lively and easy for kids to distinguish.
+     */
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   '#1D6FE8',   // main blue
+            pdeep:     '#1558C0',   // darker blue for shadows / borders
+            plight:    '#5B9EF5',   // lighter blue for highlights
+            pbg:       '#EBF3FF',   // very light blue background
+            sky:       '#38BDF8',   // bright sky blue accent
+            sun:       '#FBBF24',   // warm yellow (rewards / stars)
+            leaf:      '#34D399',   // green (correct answers)
+            coral:     '#FB7185',   // coral red (wrong answers / danger)
+            grape:     '#A78BFA',   // soft purple (labels / secondary)
+            ink:       '#1E293B',   // near-black text
+            card:      '#FFFFFF',   // card backgrounds
+            muted:     '#64748B',   // muted label text
+          },
+          fontFamily: {
+            display: ['"Baloo 2"', 'cursive'],
+            body:    ['Nunito', 'sans-serif'],
+          },
+          boxShadow: {
+            chunky:    '0 6px 0 0 #1558C0',
+            'chunky-sm': '0 4px 0 0 #1558C0',
+            'chunky-lg': '0 8px 0 0 #1558C0',
+            'card':    '0 4px 24px 0 rgba(29,111,232,0.10)',
+          },
+          borderRadius: {
+            blob: '2rem',
+          },
+          animation: {
+            'bounce-slow': 'bounce 2.5s infinite',
+            'pop-in':      'popIn 0.35s cubic-bezier(.34,1.56,.64,1)',
+            'float':       'float 4s ease-in-out infinite',
+            'slide-up':    'slideUp 0.3s cubic-bezier(.34,1.56,.64,1)',
+          },
+          keyframes: {
+            popIn: {
+              '0%':   { transform: 'scale(0.5)', opacity: '0' },
+              '100%': { transform: 'scale(1)',   opacity: '1' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%':      { transform: 'translateY(-12px)' },
+            },
+            slideUp: {
+              '0%':   { transform: 'translateY(24px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)',    opacity: '1' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="font-body bg-pbg text-ink min-h-screen overflow-x-hidden select-none">
+
+  <!-- Celebration confetti layer — sits above content but below interactive elements -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- Single-page app shell; JS toggles .active on the correct view -->
+  <div id="app" class="relative z-10 min-h-screen w-full max-w-md mx-auto flex flex-col">
+
+    <!-- ===================== LANDING PAGE ===================== -->
+    <section id="view-menu" class="view flex flex-col min-h-screen px-5 pt-10 pb-8">
+
+      <header class="text-center mb-8 animate-pop-in">
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-3 animate-float">
+          <span class="text-5xl">
+            <img src="just-solve.png" alt="just solve logo">
+          </span>
+        </div>
+        <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-primary leading-tight">Just Solve!</h1>
+        <p class="text-sm font-bold text-muted mb-6">Solve faster and be the Next Math Star!</p>
+      </header>
+
+      <!-- Primary action -->
+      <button id="btn-play"
+        class="font-display text-3xl font-extrabold text-white bg-primary border-4 border-pdeep rounded-blob py-5 shadow-chunky active:shadow-none active:translate-y-1.5 transition-all mb-5 animate-slide-up">
+        ▶ Play Now!
+      </button>
+
+      <!-- Secondary navigation tiles -->
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <button id="btn-leaderboard" class="menu-tile tile-sun">
+          <span class="text-2xl">🏆</span>
+          <span>Top Scores</span>
+        </button>
+        <button id="btn-stats" class="menu-tile tile-leaf">
+          <span class="text-2xl">📊</span>
+          <span>My Stats</span>
+        </button>
+        <button id="btn-sound-toggle" class="menu-tile tile-grape">
+          <span class="text-2xl" id="sound-icon">🔊</span>
+          <span id="sound-label">Sound On</span>
+        </button>
+      </div>
+
+      <!-- PWA install — only visible when browser fires beforeinstallprompt -->
+      <button id="btn-install"
+        class="hidden font-display text-base font-bold text-white bg-sky border-4 border-pdeep rounded-blob py-3 shadow-chunky-sm active:shadow-none active:translate-y-1 transition-all">
+        Play Offline
+      </button>
+
+      <p class="text-center text-xs font-bold text-muted mt-auto pt-4">© 2026 Just Solve! | Developed by: JManlusoc</p>
+    </section>
+
+
+    <!-- ===================== MODE SELECTION ===================== -->
+    <section id="view-mode" class="view hidden flex-col min-h-screen px-5 pt-6 pb-8">
+
+      <header class="flex items-center justify-between mb-1">
+        <button id="btn-mode-back" class="back-btn">⬅</button>
+        <div class="flex-1 text-center">
+          <p class="text-xs font-extrabold text-muted uppercase tracking-widest">Step 1 of 2</p>
+          <h2 class="font-display text-2xl font-extrabold text-ink mb-2">Choose a Mode</h2>
+        </div>
+        <div class="w-12"></div>
+      </header>
+      <p class="text-center text-sm font-bold text-muted mb-6">How fast do you want to go?</p>
+
+      <div id="mode-list" class="flex flex-col gap-4">
+        <!-- Rendered by renderModeList() -->
+      </div>
+    </section>
+
+
+    <!-- ===================== CATEGORY SELECTION ===================== -->
+    <section id="view-category" class="view hidden flex-col min-h-screen px-5 pt-6 pb-8">
+
+      <header class="flex items-center justify-between mb-1">
+        <button id="btn-category-back" class="back-btn">⬅</button>
+        <div class="flex-1 text-center">
+          <p class="text-xs font-extrabold text-muted uppercase tracking-widest">Step 2 of 2</p>
+          <h2 class="font-display text-2xl font-extrabold text-ink mb-2">Pick a Category</h2>
+        </div>
+        <div class="w-12"></div>
+      </header>
+      <p class="text-center text-sm font-bold text-muted mb-6">What kind of math today?</p>
+
+      <!-- 2-column grid; Mixed spans both columns via JS -->
+      <div id="category-list" class="grid grid-cols-2 gap-3">
+        <!-- Rendered by renderCategoryList() -->
+      </div>
+    </section>
+
+
+    <!-- ===================== BRIEFING SCREEN ===================== -->
+    <section id="view-briefing" class="view hidden flex-col min-h-screen px-5 py-8 justify-center">
+
+      <div class="bg-card border-4 border-pdeep rounded-blob shadow-chunky-lg p-6 w-full animate-pop-in">
+        <div class="text-center mb-4">
+          <div class="text-6xl mb-2 animate-bounce-slow" id="briefing-emoji">🎯</div>
+          <h2 class="font-display text-3xl font-extrabold text-primary" id="briefing-title">Easy Addition</h2>
+          <p class="font-bold text-muted text-sm mt-1">Get ready to solve!</p>
+        </div>
+
+        <!-- Rules at a glance -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="rule-card bg-pbg border-primary/30">
+            <span class="text-2xl">⏱️</span>
+            <p class="font-display font-bold text-xs text-muted mt-1">Starting Time</p>
+            <p class="font-display text-2xl font-extrabold text-primary" id="briefing-timer">10s</p>
+          </div>
+          <div class="rule-card bg-leaf/10 border-leaf/40">
+            <span class="text-2xl">✅</span>
+            <p class="font-display font-bold text-xs text-muted mt-1">Correct</p>
+            <p class="font-display text-2xl font-extrabold text-leaf">+3 sec</p>
+          </div>
+          <div class="rule-card bg-coral/10 border-coral/40 col-span-2">
+            <span class="text-2xl">❌</span>
+            <p class="font-display font-bold text-xs text-muted mt-1">Wrong Answer</p>
+            <p class="font-display text-2xl font-extrabold text-coral">−2 sec</p>
+          </div>
+        </div>
+
+        <p class="text-xs font-bold text-muted text-center mb-5">
+          Solve as many questions as you can and stay in the game!
+        </p>
+
+        <div class="flex gap-3">
+          <button id="btn-briefing-back"
+            class="flex-1 font-display font-bold text-ink bg-pbg border-4 border-pdeep rounded-blob py-3 shadow-chunky-sm active:shadow-none active:translate-y-1 transition-all">
+            ⬅ Back
+          </button>
+          <button id="btn-briefing-start"
+            class="flex-1 font-display font-extrabold text-white bg-leaf border-4 border-ink/20 rounded-blob py-3 shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all">
+            Let's Go! 🚀
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================== GAMEPLAY SCREEN ===================== -->
+    <section id="view-game" class="view hidden flex-col min-h-screen px-3 pt-4 pb-3">
+
+      <!-- HUD: level badge | timer bar | pause -->
+      <div class="flex items-center gap-2 mb-3">
+
+        <div class="level-badge">
+          <span class="text-xl">⭐</span>
+          <span id="hud-level" class="font-display font-extrabold text-base leading-none">1</span>
+        </div>
+
+        <div class="flex-1 relative">
+          <div class="bg-white border-3 border-pdeep rounded-full h-8 overflow-hidden shadow-inner">
+            <div id="timer-bar" class="h-full bg-primary transition-[width] duration-100 ease-linear rounded-full"></div>
+          </div>
+          <span id="hud-timer"
+            class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-sm text-ink pointer-events-none">
+            10.0s
+          </span>
+        </div>
+
+        <button id="btn-pause" aria-label="Pause"
+          class="w-12 h-12 flex items-center justify-center text-2xl bg-primary text-white border-4 border-pdeep rounded-2xl shadow-chunky-sm active:shadow-none active:translate-y-1 transition-all">
+          ☰
+        </button>
+      </div>
+
+      <!-- Question card -->
+      <div class="flex-1 flex flex-col items-center justify-center py-2">
+        <div id="question-card"
+          class="bg-card border-4 border-pdeep rounded-blob shadow-chunky-lg px-6 py-8 w-full text-center">
+          <p class="font-bold text-muted text-xs uppercase tracking-wider mb-2" id="game-category-label">Addition · Easy</p>
+          <p id="question-text" class="font-display text-5xl sm:text-6xl font-extrabold text-ink leading-tight">7 + 5 = ?</p>
+          <div class="mt-4 h-14 flex items-center justify-center">
+            <p id="answer-display"
+              class="font-display text-4xl font-extrabold text-primary tracking-widest min-w-[6rem] bg-pbg border-4 border-primary/30 rounded-2xl px-4 py-1">
+              _
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom numeric keypad — 3×4 grid -->
+      <div class="grid grid-cols-3 gap-2 mt-2" id="keypad">
+        <!-- Rendered by renderKeypad() -->
+      </div>
+    </section>
+
+
+    <!-- ===================== PAUSE OVERLAY ===================== -->
+    <div id="view-pause" class="view hidden fixed inset-0 z-40 bg-ink/60 backdrop-blur-sm flex items-center justify-center px-6">
+      <div class="bg-card border-4 border-pdeep rounded-blob shadow-chunky-lg p-6 w-full max-w-sm animate-pop-in text-center">
+        <h2 class="font-display text-3xl font-extrabold text-primary mb-4">⏸️ Paused</h2>
+
+        <div class="flex flex-col gap-3 mb-4">
+          <button id="btn-resume"
+            class="font-display font-extrabold text-white bg-leaf border-4 border-ink/10 rounded-blob py-3 shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all">
+            ▶ Resume
+          </button>
+          <button id="btn-restart"
+            class="font-display font-extrabold text-white bg-primary border-4 border-pdeep rounded-blob py-3 shadow-chunky-sm active:shadow-none active:translate-y-1 transition-all">
+            Restart
+          </button>
+          <button id="btn-quit"
+            class="font-display font-extrabold text-white bg-coral border-4 border-ink/10 rounded-blob py-3 shadow-[0_4px_0_0_#e11d48] active:shadow-none active:translate-y-1 transition-all">
+            Quit to Menu
+          </button>
+        </div>
+
+        <div class="bg-pbg border-2 border-pdeep/30 rounded-2xl p-4 text-left">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-display font-bold text-sm">Sound</span>
+            <button id="btn-pause-sound" class="text-3xl leading-none">🔊</button>
+          </div>
+          <label for="volume-slider" class="font-bold text-xs text-muted block mb-2">Volume</label>
+          <input id="volume-slider" type="range" min="0" max="100" value="70"
+            class="w-full accent-primary h-2 rounded-full" />
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===================== GAME OVER SCREEN ===================== -->
+    <section id="view-gameover" class="view hidden flex-col min-h-screen px-5 py-6 justify-start overflow-y-auto">
+
+      <div class="bg-card border-4 border-pdeep rounded-blob shadow-chunky-lg p-6 w-full animate-pop-in mt-4">
+
+        <!-- Result header -->
+        <div class="text-center mb-4">
+          <div class="text-6xl mb-2">⏰</div>
+          <h2 class="font-display text-3xl font-extrabold text-coral">Time's Up!</h2>
+          <p class="font-display text-xl font-bold mt-1">
+            You reached <span id="result-level" class="text-primary">Level 1</span>!
+          </p>
+        </div>
+
+        <!-- Personalised feedback message -->
+        <div id="feedback-box"
+          class="bg-pbg border-2 border-primary/30 rounded-2xl px-4 py-3 mb-5 text-sm font-bold text-center text-ink">
+          Loading feedback…
+        </div>
+
+        <!-- Try Again quick action — always visible right after time's up
+        <button id="btn-try-again"
+          class="w-full font-display font-extrabold text-white bg-primary border-4 border-pdeep rounded-blob py-4 shadow-chunky active:shadow-none active:translate-y-1.5 transition-all mb-4 text-xl">
+          Try Again!
+        </button>-->
+
+        <!-- Save score form -->
+        <div id="gameover-form" class="text-left">
+          <p class="font-display font-extrabold text-sm text-center text-muted mb-3 uppercase tracking-wide">
+            — Save your score —
+          </p>
+
+          <label class="font-display font-bold text-sm block mb-1">Nickname (max 10 characters)</label>
+          <input id="input-nickname" maxlength="10" placeholder="e.g. Jas"
+            class="w-full border-4 border-pdeep rounded-2xl px-4 py-3 font-bold text-lg mb-4 focus:outline-none focus:ring-4 focus:ring-primary/40 bg-pbg" required/>
+
+          <label class="font-display font-bold text-sm block mb-2">You are a…</label>
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <button data-gender="boy"  class="gender-btn">👦 Boy</button>
+            <button data-gender="girl" class="gender-btn">👧 Girl</button>
+            <button data-gender="na"   class="gender-btn">🌟 N/A</button>
+          </div>
+
+          <button id="btn-save-score"
+            class="w-full font-display font-extrabold text-white bg-leaf border-4 border-ink/10 rounded-blob py-3 shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all">
+            💾 Save Score
+          </button>
+        </div>
+
+        <!-- Post-save navigation — hidden until score is saved -->
+        <div id="gameover-actions" class="hidden flex-col gap-2 mt-4">
+          <button id="btn-play-again"
+            class="w-full font-display font-extrabold text-white bg-primary border-4 border-pdeep rounded-blob py-3 shadow-chunky-sm active:shadow-none active:translate-y-1 transition-all">
+            Play Again
+          </button>
+          <button id="btn-gameover-leaderboard"
+            class="w-full font-display font-extrabold text-ink bg-sun border-4 border-ink/20 rounded-blob py-3 shadow-[0_4px_0_0_#d97706] active:shadow-none active:translate-y-1 transition-all">
+            🏆 View Leaderboard
+          </button>
+          <button id="btn-gameover-menu"
+            class="w-full font-display font-bold text-ink bg-pbg border-4 border-pdeep rounded-blob py-3 shadow-chunky-sm active:shadow-none active:translate-y-1 transition-all">
+            🏠 Main Menu
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================== LEADERBOARD SCREEN ===================== -->
+    <section id="view-leaderboard" class="view hidden flex-col min-h-screen px-5 pt-6 pb-8">
+
+      <header class="flex items-center justify-between mb-4">
+        <button id="btn-leaderboard-back" class="back-btn">⬅</button>
+        <h2 class="font-display text-2xl font-extrabold text-primary">🏆 Leaderboard</h2>
+        <div class="w-12"></div>
+      </header>
+
+      <div class="flex gap-2 mb-4">
+        <select id="filter-category" class="filter-select">
+          <option value="all">All Categories</option>
+          <option value="addition">Addition</option>
+          <option value="subtraction">Subtraction</option>
+          <option value="multiplication">Multiplication</option>
+          <option value="division">Division</option>
+          <option value="mixed">Mixed</option>
+        </select>
+        <select id="filter-mode" class="filter-select">
+          <option value="all">All Modes</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+
+      <div id="leaderboard-list" class="flex flex-col gap-2 overflow-y-auto flex-1">
+        <!-- Rendered by renderLeaderboard() -->
+      </div>
+    </section>
+
+
+    <!-- ===================== STATS DASHBOARD ===================== -->
+    <section id="view-stats" class="view hidden flex-col min-h-screen px-5 pt-6 pb-8 overflow-y-auto">
+
+      <header class="flex items-center justify-between mb-4">
+        <button id="btn-stats-back" class="back-btn">⬅</button>
+        <h2 class="font-display text-2xl font-extrabold text-primary">📊 My Stats</h2>
+        <div class="w-12"></div>
+      </header>
+
+      <div id="stats-grid" class="grid grid-cols-2 gap-3 mb-4">
+        <!-- Rendered by renderStats() -->
+      </div>
+
+      <div class="bg-card border-4 border-pdeep rounded-2xl p-4 mb-4 shadow-card">
+        <h3 class="font-display font-extrabold text-base mb-2">🎯 Answer Accuracy</h3>
+        <div class="w-full bg-pbg border-2 border-pdeep/30 rounded-full h-5 overflow-hidden">
+          <div id="accuracy-bar" class="h-full bg-leaf transition-all duration-700 rounded-full" style="width:0%"></div>
+        </div>
+        <p id="accuracy-text" class="font-bold text-xs mt-2 text-center text-muted">No games played yet</p>
+      </div>
+
+      <button id="btn-reset-stats"
+        class="w-full font-display font-bold text-coral bg-card border-4 border-coral/40 rounded-blob py-3 mb-4 shadow-[0_4px_0_0_rgba(251,113,133,0.4)] active:shadow-none active:translate-y-1 transition-all">
+        🗑️ Reset All Data
+      </button>
+    </section>
+
+  </div><!-- #app -->
+
+  <!-- Toast notification for level-up / milestones -->
+  <div id="toast"
+    class="fixed top-5 left-1/2 -translate-x-1/2 z-[60] hidden font-display font-extrabold text-sm bg-sun border-4 border-ink/20 text-ink rounded-full px-5 py-2 shadow-chunky-sm pointer-events-none">
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

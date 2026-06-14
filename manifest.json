@@ -1,0 +1,38 @@
+{
+  "name": "SolveForJas - Math Adventure",
+  "short_name": "SolveForJas",
+  "description": "A fun, fast-paced math survival game for kids! Solve problems before time runs out.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#EBF3FF",
+  "theme_color": "#1D6FE8",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    {
+      "src": "favicon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "favicon/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

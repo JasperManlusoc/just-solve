@@ -1,0 +1,399 @@
+/* ================================================================
+   SolveForJas — Custom Stylesheet
+   Tailwind utility classes handle most layout and spacing.
+   This file covers reusable component classes, animations,
+   view management, and accessibility overrides.
+   ================================================================ */
+
+/* ---- CSS custom properties ---- */
+:root {
+  --ink:    #1E293B;
+  --pdeep:  #1558C0;
+  --leaf-shadow: #059669;
+  --coral-shadow: #e11d48;
+  --sun-shadow: #d97706;
+}
+
+/* ---- Base resets for a native-app feel ---- */
+html, body {
+  height: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+* {
+  -webkit-touch-callout: none;
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   VIEW MANAGEMENT
+   JS adds/removes .active; CSS handles display toggling.
+   Tailwind's `hidden` utility (display:none !important) is also
+   toggled by JS alongside .active to prevent conflicts.
+   ================================================================ */
+.view {
+  display: none;
+  width: 100%;
+}
+.view.active {
+  display: flex;
+}
+#view-pause.active {
+  display: flex;
+}
+
+/* ================================================================
+   BACKGROUND DECORATION
+   Subtle floating circles give depth without distracting kids.
+   ================================================================ */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(29,111,232,0.08) 0%, transparent 70%);
+  top: -80px;
+  right: -80px;
+}
+body::after {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%);
+  bottom: -60px;
+  left: -60px;
+}
+
+/* ================================================================
+   MENU TILES  (landing page secondary buttons)
+   ================================================================ */
+.menu-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  font-family: "Baloo 2", cursive;
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: var(--ink);
+  border: 3px solid rgba(30, 41, 59, 0.25);
+  border-radius: 1.1rem;
+  padding: 0.75rem 0.3rem;
+  box-shadow: 0 4px 0 0 rgba(30, 41, 59, 0.18);
+  transition: all 0.1s ease;
+  background: #fff;
+}
+.menu-tile:active {
+  box-shadow: none;
+  transform: translateY(4px);
+}
+.tile-sun   { background: #FEF3C7; color: #92400E; border-color: #FCD34D; box-shadow: 0 4px 0 0 #D97706; }
+.tile-leaf  { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; box-shadow: 0 4px 0 0 #059669; }
+.tile-grape { background: #EDE9FE; color: #4C1D95; border-color: #C4B5FD; box-shadow: 0 4px 0 0 #7C3AED; }
+
+/* ================================================================
+   MODE SELECTION CARDS  (full-width list items)
+   ================================================================ */
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: "Baloo 2", cursive;
+  border: 4px solid var(--pdeep);
+  border-radius: 1.25rem;
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 5px 0 0 var(--pdeep);
+  transition: all 0.1s ease;
+  width: 100%;
+  text-align: left;
+}
+.mode-card:active {
+  box-shadow: none;
+  transform: translateY(5px);
+}
+.mode-card .mode-emoji  { font-size: 2.4rem; flex-shrink: 0; }
+.mode-card .mode-title  { font-weight: 800; font-size: 1.15rem; }
+.mode-card .mode-sub    { font-family: "Nunito", sans-serif; font-weight: 700; font-size: 0.75rem; opacity: 0.7; }
+.mode-card .mode-arrow  { margin-left: auto; font-size: 1.4rem; opacity: 0.5; }
+
+/* Color variants per mode */
+.mode-easy   { background: #D1FAE5; }
+.mode-medium { background: #FEF3C7; }
+.mode-hard   { background: #FEE2E2; }
+
+/* ================================================================
+   CATEGORY SELECTION CARDS  (2-column grid)
+   ================================================================ */
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: "Baloo 2", cursive;
+  font-weight: 800;
+  font-size: 1rem;
+  border: 4px solid var(--pdeep);
+  border-radius: 1.25rem;
+  padding: 1.4rem 0.5rem;
+  box-shadow: 0 5px 0 0 var(--pdeep);
+  transition: all 0.1s ease;
+  min-height: 8rem;
+  color: var(--ink);
+}
+.category-card:active {
+  box-shadow: none;
+  transform: translateY(5px);
+}
+.category-card .cat-emoji { font-size: 2.6rem; }
+.category-card.span-full  { grid-column: span 2 / span 2; }
+
+/* Color variants per category */
+.cat-addition      { background: #D1FAE5; }
+.cat-subtraction   { background: #FEE2E2; }
+.cat-multiplication{ background: #EDE9FE; }
+.cat-division      { background: #DBEAFE; }
+.cat-mixed         { background: #FEF3C7; }
+
+/* ================================================================
+   BRIEFING SCREEN — rule card tiles
+   ================================================================ */
+.rule-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  padding: 0.85rem 0.5rem;
+  text-align: center;
+}
+
+/* ================================================================
+   GAME SCREEN — level badge
+   ================================================================ */
+.level-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: #FEF3C7;
+  border: 4px solid #D97706;
+  border-radius: 1rem;
+  box-shadow: 0 4px 0 0 #D97706;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+/* ================================================================
+   NUMERIC KEYPAD
+   ================================================================ */
+.key-btn {
+  font-family: "Baloo 2", cursive;
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--ink);
+  background: #fff;
+  border: 4px solid #BFDBFE;
+  border-radius: 1.1rem;
+  padding: 0.9rem 0;
+  box-shadow: 0 4px 0 0 #93C5FD;
+  transition: all 0.08s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.key-btn:active {
+  box-shadow: none;
+  transform: translateY(4px);
+}
+.key-btn.key-clear {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  box-shadow: 0 4px 0 0 #F87171;
+  color: #991B1B;
+}
+.key-btn.key-submit {
+  background: #D1FAE5;
+  border-color: #6EE7B7;
+  box-shadow: 0 4px 0 0 #34D399;
+  color: #065F46;
+  font-size: 1.25rem;
+}
+
+/* ================================================================
+   GENDER BUTTONS  (game over save form)
+   ================================================================ */
+.gender-btn {
+  font-family: "Baloo 2", cursive;
+  font-weight: 700;
+  font-size: 0.82rem;
+  border: 3px solid #BFDBFE;
+  border-radius: 1rem;
+  padding: 0.65rem 0.25rem;
+  background: #fff;
+  box-shadow: 0 3px 0 0 #93C5FD;
+  transition: all 0.1s ease;
+  color: var(--ink);
+}
+.gender-btn:active  { box-shadow: none; transform: translateY(3px); }
+.gender-btn.selected {
+  background: #DBEAFE;
+  border-color: #1D6FE8;
+  box-shadow: 0 3px 0 0 #1558C0;
+}
+
+/* ================================================================
+   BACK BUTTON
+   ================================================================ */
+.back-btn {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  background: #fff;
+  border: 4px solid var(--pdeep);
+  border-radius: 1rem;
+  box-shadow: 0 4px 0 0 var(--pdeep);
+  transition: all 0.1s ease;
+  color: var(--ink);
+}
+.back-btn:active { box-shadow: none; transform: translateY(4px); }
+
+/* ================================================================
+   FILTER SELECTS  (leaderboard)
+   ================================================================ */
+.filter-select {
+  flex: 1;
+  font-family: "Baloo 2", cursive;
+  font-weight: 700;
+  font-size: 0.82rem;
+  border: 3px solid #BFDBFE;
+  border-radius: 0.85rem;
+  padding: 0.55rem 0.6rem;
+  background: #fff;
+  color: var(--ink);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ================================================================
+   LEADERBOARD ITEMS
+   ================================================================ */
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: #fff;
+  border: 3px solid #BFDBFE;
+  border-radius: 1rem;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 3px 0 0 #93C5FD;
+}
+.leaderboard-item .rank {
+  font-family: "Baloo 2", cursive;
+  font-weight: 800;
+  font-size: 1.1rem;
+  min-width: 2rem;
+  text-align: center;
+}
+.leaderboard-item.rank-1 { background: linear-gradient(135deg, #FEF3C7, #fff); border-color: #FCD34D; box-shadow: 0 3px 0 0 #D97706; }
+.leaderboard-item.rank-2 { background: linear-gradient(135deg, #DBEAFE, #fff); border-color: #93C5FD; }
+.leaderboard-item.rank-3 { background: linear-gradient(135deg, #FEE2E2, #fff); border-color: #FCA5A5; }
+
+/* ================================================================
+   STAT CARDS
+   ================================================================ */
+.stat-card {
+  background: #fff;
+  border: 3px solid #BFDBFE;
+  border-radius: 1.25rem;
+  padding: 0.85rem 0.5rem;
+  box-shadow: 0 4px 0 0 #93C5FD;
+  text-align: center;
+}
+.stat-card .stat-icon  { font-size: 1.6rem; }
+.stat-card .stat-value {
+  font-family: "Baloo 2", cursive;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: #1E293B;
+  line-height: 1.2;
+  margin-top: 0.2rem;
+}
+.stat-card .stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748B;
+  margin-top: 0.1rem;
+}
+
+/* ================================================================
+   ANSWER FLASH ANIMATIONS
+   ================================================================ */
+.flash-correct { animation: flashGreen 0.4s ease; }
+.flash-wrong   { animation: shake 0.35s ease-in-out, flashRed 0.4s ease; }
+
+@keyframes flashGreen {
+  0%   { background-color: rgba(52, 211, 153, 0.3); }
+  100% { background-color: transparent; }
+}
+@keyframes flashRed {
+  0%   { background-color: rgba(251, 113, 133, 0.3); }
+  100% { background-color: transparent; }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-8px); }
+  75%       { transform: translateX(8px); }
+}
+
+/* ================================================================
+   TIMER BAR STATES
+   ================================================================ */
+#timer-bar.timer-warn   { background: #FBBF24; }
+#timer-bar.timer-danger { background: #FB7185; }
+
+/* ================================================================
+   TOAST NOTIFICATION
+   ================================================================ */
+#toast.show {
+  animation: toastPop 1.8s ease forwards;
+}
+@keyframes toastPop {
+  0%   { opacity: 0; transform: translate(-50%, -16px) scale(0.85); }
+  15%  { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  25%  { transform: translate(-50%, 0) scale(1); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -8px) scale(0.95); }
+}
+
+/* ================================================================
+   ACCESSIBILITY
+   ================================================================ */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #38BDF8;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
